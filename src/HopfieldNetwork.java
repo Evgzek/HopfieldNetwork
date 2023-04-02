@@ -4,6 +4,10 @@ public class HopfieldNetwork {
 
     private final int numNeurons; // количество нейронов в сети
     private double[][] weights; // веса между нейронами
+    private static double[] pattern1 = new double[] {1, -1, 1, 1, -1, -1, 1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+    private static double[] pattern2 = new double[] {1, 1, 1, 1, 1, -1, -1, -1, 1, 1, 1, 1, 1, -1, -1, -1, 1, 1, 1, 1};
+    private static double[] pattern3 = new double[] {-1, 1, 1, 1, -1, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1};
+
 
     // Конструктор для создания сети Хопфилда
     public HopfieldNetwork(int numNeurons) {
@@ -69,28 +73,80 @@ public class HopfieldNetwork {
                 {1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, 1, -1, -1, -1, -1, -1},
                 {1, 1, 1, 1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, 1, 1, 1}
         };
-        // Создаем сеть Хопфилда
-        HopfieldNetwork network = new HopfieldNetwork(100);
+//        // Создаем сеть Хопфилда
+//        HopfieldNetwork network = new HopfieldNetwork(100);
+//
+//        // Обучаем сеть Хопфилда на образцах
+//        network.train(patterns);
+//
+//        // Восстанавливаем поврежденные образцы
+//        double[] noisyPattern1 = new double[] {1, -1, 1, 1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+//        double[] noisyPattern2 = new double[] {1, -1, 1, -1, -1, 1, -1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1};
+//        double[] noisyPattern3 = new double[] {-1, -1, -1, -1, 1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+//
+//        // Восстанавливаем поврежденные образцы
+//        double[] result1 = network.recall(noisyPattern1);
+//        double[] result2 = network.recall(noisyPattern2);
+//        double[] result3 = network.recall(noisyPattern3);
+//
+//        // Выводим восстановленные образцы
+//        System.out.println(Arrays.toString(result1));
+//        System.out.println(Arrays.toString(result2));
+//        System.out.println(Arrays.toString(result3));
 
-        // Обучаем сеть Хопфилда на образцах
-        network.train(patterns);
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Создаем сеть Хопфилда и загружаем образы
+        HopfieldNetwork network = new HopfieldNetwork(20);
+        network.train(pattern1);
+        network.train(pattern2);
+        network.train(pattern3);
 
         // Восстанавливаем поврежденные образцы
         double[] noisyPattern1 = new double[] {1, -1, 1, 1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-        double[] noisyPattern2 = new double[] {1, -1, 1, -1, -1, 1, -1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1};
-        double[] noisyPattern3 = new double[] {-1, -1, -1, -1, 1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-
-        // Восстанавливаем поврежденные образцы
         double[] result1 = network.recall(noisyPattern1);
-        double[] result2 = network.recall(noisyPattern2);
-        double[] result3 = network.recall(noisyPattern3);
 
-        // Выводим восстановленные образцы
-        System.out.println(Arrays.toString(result1));
-        System.out.println(Arrays.toString(result2));
-        System.out.println(Arrays.toString(result3));
+        // Определяем, какой образ наиболее похож на восстановленный образ
+        double[] closestPattern = getClosestPattern(new double[][]{pattern1, pattern2, pattern3}, result1);
+
+        // Выводим результат
+        System.out.println("Восстановленный образ: " + Arrays.toString(result1));
+        System.out.println("Ближайший образ: " + Arrays.toString(closestPattern));
+
+    }
+    // Функция для поиска наиболее похожего образа
+    private static double[] getClosestPattern(double[][] patterns, double[] input) {
+        double minDistance = Double.MAX_VALUE;
+        double[] closestPattern = null;
+        for (double[] pattern : patterns) {
+            double distance = getEuclideanDistance(pattern, input);
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestPattern = pattern;
+            }
+        }
+        return closestPattern;
+    }
+
+    //Функция для вычисления евклидова расстояния между векторами
+    private static double getEuclideanDistance(double[] v1, double[] v2) {
+        double sum = 0.0;
+        for (int i = 0; i < v1.length; i++) {
+            sum += Math.pow(v1[i] - v2[i], 2);
+        }
+        return Math.sqrt(sum);
     }
 }
+    //В данном примере образы для распознавания являются векторами длиной 20, которые представляют собой паттерны для цифр 0, 1 и 2. Предполагается, что сеть Хопфилда уже была обучена на этих образах. Для тестирования используется поврежденный образ (noisyPattern1), который подается на вход сети Хопфилда. Затем функция getClosestPattern() находит наиболее похожий образ из обучающей выборки на основе евклидова расстояния между векторами признаков. В результате выполнения программы выводится восстановленный образ и наиболее похожий образ из обучающей выборки.
+
+        //Например, при выполнении данного кода на выходе может быть получен следующий результат:
+
+    //Восстановленный образ: [1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+        //Ближайший образ: [1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+
+
+    //В данном случае восстановленный образ был наиболее похож на образ для цифры 0, поэтому ближайшим образом был выбран именно этот образ.
+
+
 
 // Output:
 // [1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
